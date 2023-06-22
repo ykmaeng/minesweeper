@@ -1,13 +1,184 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Parcel Sandbox</title>
-    <meta charset="UTF-8" />
+    <style>
+      body {
+        /* text-align: center; */
+        background-color: goldenrod;
+      }
+      .container {
+        display: grid;
+        gap: 1px;
+      }
+      .container > div {
+        font-size: 1.2rem;
+        text-align: center;
+        padding-top: 20%;
+      }
+      .box-init {
+        background-color: gold;
+      }
+      .box-open {
+        background-color: white;
+      }
+      .box-bomb {
+        background-image: url("./resources/bomb.png");
+        background-size: contain;
+        background-repeat: no-repeat;
+        padding: 0;
+      }
+      .box-flag {
+        /* background-color: lightgreen; */
+        background-image: url("./resources/flag.jpg");
+        background-size: contain;
+        background-repeat: no-repeat;
+        padding: 0;
+      }
+    </style>
   </head>
-
   <body>
-    <div id="app"></div>
+    <div class="layout">
+      <div class="container"></div>
+    </div>
+    <script>
+      const MAX_COLS = 100;
+      const config = new Config(); // 게임 환경 설정
+      const matrix = new Array(); // 매트릭스 선언
+      const container = document.querySelector(".container");
 
-    <script src="src/index.js"></script>
+      initContainer(container);
+      initBoxes();
+      initBombs();
+
+      console.log(matrix);
+
+      // 게임 환경 객체
+      function Config() {
+        const rows = prompt("Minefield Size(Max. 100):");
+        const cols = rows;
+        const bombs = prompt(`Number of Bombs(Max. ${rows * rows}):`);
+
+        return { rows, cols, bombs };
+      }
+
+      // 룸 함수형 객체
+      function Box({ node, row, col, bomb = false, flag = false, hint = 0 }) {
+        return {
+          node,
+          row,
+          col,
+          flag,
+          bomb,
+          hint
+        };
+      }
+
+      // 컨테이너 아이템 생성
+      function initBoxes() {
+        for (let i = 0; i < config.rows; i++) {
+          matrix[i] = new Array();
+          for (let j = 0; j < config.cols; j++) {
+            let node = document.createElement("div", {});
+            node.onclick = () => leftClicked(i, j);
+            node.oncontextmenu = () => rightClicked(i, j);
+            node.className = "box-init";
+            node.id = getNodeId(i, j);
+            container.appendChild(node);
+            matrix[i][j] = new Box({
+              node: node, // document.getElementById(node.id),
+              row: i,
+              col: j
+            });
+          }
+        }
+      }
+
+      function getNodeId(row, col) {
+        return `${row}-${col}`;
+      }
+
+      // 컨테이너 스타일 설정
+      function initContainer(container) {
+        container.style[
+          "grid-template-columns"
+        ] = `repeat(${config.cols}, 50px)`;
+        container.style["grid-template-rows"] = `repeat(${config.rows}, 50px)`;
+      }
+
+      // 폭탄 초기화
+      function initBombs() {
+        const { rows, cols, bombs } = config;
+        let col, row;
+        getRandomNums(rows * cols, bombs).forEach((idx) => {
+          row = Math.floor(idx / rows);
+          col = idx - row * rows;
+          matrix[row][col].bomb = true;
+          setBoxAround(matrix[row][col], (box2) => box2.hint++);
+        });
+      }
+
+      // TODO 박스 주변 설정 - 최적화 필요
+      function setBoxAround({ row, col }, fn) {
+        [row - 1, row, row + 1].forEach((r) => {
+          if (r >= 0 && r < config.rows) {
+            [col - 1, col, col + 1].forEach((c) => {
+              c >= 0 &&
+                c < config.cols &&
+                !(r == row && c == col) &&
+                fn(matrix[r][c]);
+            });
+          }
+        });
+      }
+
+      // 폭탄이 설치될 컴럼번호 반환
+      function getRandomNums(limit, cnt) {
+        let cols = [];
+        for (let i = 0; i < cnt; i++) {
+          let no;
+          do no = randomNo(limit);
+          while (cols.find((x) => x == no));
+          cols.push(no);
+        }
+        console.log("bomb", cols);
+        return cols;
+      }
+
+      function randomNo(limit) {
+        return Math.floor(Math.random() * limit);
+      }
+
+      const leftClicked = (row, col) => openBox(matrix[row][col]);
+      const rightClicked = (row, col) => setFlag(matrix[row][col]);
+
+      function openBox(box) {
+        const { node, bomb, hint } = box;
+        if (node.className == "box-init") {
+          if (bomb) {
+            node.className = "box-bomb";
+            gameOver();
+          } else {
+            node.className = "box-open";
+            node.innerText = hint > 0 ? hint : "";
+
+            if (hint === 0) setBoxAround(box, openBox);
+          }
+        }
+      }
+
+      function setFlag(box) {
+        let { node, bomb } = box;
+        if (node.className == "box-init") {
+          node.className = "box-flag";
+        } else if (node.className == "box-flag") {
+          node.className = "box-init";
+        }
+        return false;
+      }
+
+      function gameOver() {
+        setTimeout(() => alert("폭탄이 터졌습니다. GAME OVER!"), 100);
+      }
+    </script>
   </body>
 </html>
