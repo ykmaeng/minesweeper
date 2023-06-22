@@ -1,4 +1,4 @@
-# JavaScript Minesweeper Game 🎮
+# JavaScript Minesweeper Game 💣
 
 This repository contains a Minesweeper game developed as a learning for JavaScript. While it still needs to be fully completed, the core logic of the game is implemented.
 
