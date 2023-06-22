@@ -3,7 +3,6 @@
   <head>
     <style>
       body {
-        /* text-align: center; */
         background-color: goldenrod;
       }
       .container {
@@ -28,7 +27,6 @@
         padding: 0;
       }
       .box-flag {
-        /* background-color: lightgreen; */
         background-image: url("./resources/flag.jpg");
         background-size: contain;
         background-repeat: no-repeat;
@@ -42,8 +40,8 @@
     </div>
     <script>
       const MAX_COLS = 100;
-      const config = new Config(); // 게임 환경 설정
-      const matrix = new Array(); // 매트릭스 선언
+      const config = new Config(); // Game configuration setup
+      const matrix = new Array(); // Declaration of the matrix
       const container = document.querySelector(".container");
 
       initContainer(container);
@@ -52,7 +50,7 @@
 
       console.log(matrix);
 
-      // 게임 환경 객체
+      // Game configuration object
       function Config() {
         const rows = prompt("Minefield Size(Max. 100):");
         const cols = rows;
@@ -61,7 +59,7 @@
         return { rows, cols, bombs };
       }
 
-      // 룸 함수형 객체
+      // Box function object
       function Box({ node, row, col, bomb = false, flag = false, hint = 0 }) {
         return {
           node,
@@ -73,7 +71,7 @@
         };
       }
 
-      // 컨테이너 아이템 생성
+      // Initialize boxes in the container
       function initBoxes() {
         for (let i = 0; i < config.rows; i++) {
           matrix[i] = new Array();
@@ -85,7 +83,7 @@
             node.id = getNodeId(i, j);
             container.appendChild(node);
             matrix[i][j] = new Box({
-              node: node, // document.getElementById(node.id),
+              node: node,
               row: i,
               col: j
             });
@@ -93,11 +91,12 @@
         }
       }
 
+      // Generate ID for a node
       function getNodeId(row, col) {
         return `${row}-${col}`;
       }
 
-      // 컨테이너 스타일 설정
+      // Set style for container
       function initContainer(container) {
         container.style[
           "grid-template-columns"
@@ -105,7 +104,7 @@
         container.style["grid-template-rows"] = `repeat(${config.rows}, 50px)`;
       }
 
-      // 폭탄 초기화
+      // Initialize bombs
       function initBombs() {
         const { rows, cols, bombs } = config;
         let col, row;
@@ -117,7 +116,7 @@
         });
       }
 
-      // TODO 박스 주변 설정 - 최적화 필요
+      // Set box around the current box
       function setBoxAround({ row, col }, fn) {
         [row - 1, row, row + 1].forEach((r) => {
           if (r >= 0 && r < config.rows) {
@@ -131,7 +130,7 @@
         });
       }
 
-      // 폭탄이 설치될 컴럼번호 반환
+      // Get random column numbers where bombs will be placed
       function getRandomNums(limit, cnt) {
         let cols = [];
         for (let i = 0; i < cnt; i++) {
@@ -144,13 +143,18 @@
         return cols;
       }
 
+      // Get random number within the limit
       function randomNo(limit) {
         return Math.floor(Math.random() * limit);
       }
 
+      // Actions for left-click
       const leftClicked = (row, col) => openBox(matrix[row][col]);
+
+      // Actions for right-click
       const rightClicked = (row, col) => setFlag(matrix[row][col]);
 
+      // Function to open a box
       function openBox(box) {
         const { node, bomb, hint } = box;
         if (node.className == "box-init") {
@@ -166,6 +170,7 @@
         }
       }
 
+      // Function to set a flag on a box
       function setFlag(box) {
         let { node, bomb } = box;
         if (node.className == "box-init") {
@@ -176,8 +181,9 @@
         return false;
       }
 
+      // Function for game over condition
       function gameOver() {
-        setTimeout(() => alert("폭탄이 터졌습니다. GAME OVER!"), 100);
+        setTimeout(() => alert("The bomb has exploded. GAME OVER!"), 100);
       }
     </script>
   </body>
